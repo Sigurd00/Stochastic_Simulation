@@ -13,6 +13,8 @@ add_executable(Stochastic_Simulation
         vessel.h
         reaction.cpp
         reaction.h
+        pretty_printer.cpp
+        pretty_printer.h
 )
 
 # Add the test executable
