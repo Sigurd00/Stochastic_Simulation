@@ -26,14 +26,14 @@ TEST_CASE("Reaction")
 
     SUBCASE("Reactions")
     {
-        reaction r3 = ((A + C) >> 20.0 >>= B + C);
+        Reaction r3 = ((A + C) >> 20.0 >>= B + C);
         CHECK((r3.inputs[0] == "a"));
         CHECK((r3.inputs[1] == "c"));
         CHECK((r3.rate == 20.0));
         CHECK((r3.products[0] == "b"));
         CHECK((r3.products[1] == "c"));
 
-        reaction r4 = ((A) >> 10.0 >>= B);
+        Reaction r4 = ((A) >> 10.0 >>= B);
         CHECK((r4.inputs[0] == "a"));
         CHECK((r4.rate == 10.0));
         CHECK((r4.products[0] == "b"));

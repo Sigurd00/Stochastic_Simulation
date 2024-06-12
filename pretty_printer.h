@@ -22,7 +22,7 @@ namespace stochastic{
 
     class pretty_printer {
     public:
-        explicit pretty_printer(const vessel& vessel) : vessel(vessel) {}
+        explicit pretty_printer(const Vessel& vessel) : vessel(vessel) {}
         void generate_network_graph(const std::string& filename) {
             std::ofstream dotFile(filename + ".dot");
             if (!dotFile.is_open()) {
@@ -61,7 +61,7 @@ namespace stochastic{
             }
         }
     private:
-        const vessel& vessel;
+        const Vessel& vessel;
     };
 
 

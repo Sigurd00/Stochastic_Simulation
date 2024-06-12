@@ -12,23 +12,24 @@
 
 namespace stochastic {
 
-    class partialReaction{
+    class PartialReaction{
     public:
-        partialReaction(std::vector<std::string> inputs, double rate) : inputs(std::move(inputs)), rate(rate) {}
+        PartialReaction(std::vector<std::string> inputs, double rate) : inputs(std::move(inputs)), rate(rate) {}
 
         std::vector<std::string> inputs;
         double rate;
     };
 
-    class reaction{
+    class Reaction{
     public:
-        reaction(partialReaction partial, std::vector<std::string> products) : inputs(std::move(partial.inputs)), products(std::move(products)), rate(partial.rate) {}
+        Reaction(PartialReaction partial, std::vector<std::string> products) : inputs(std::move(partial.inputs)), products(std::move(products)), rate(partial.rate) {}
 
-        std::vector<std::string> inputs;
-        std::vector<std::string> products;
-        double rate;
+        const std::vector<std::string> inputs;
+        const std::vector<std::string> products;
+        const double rate;
+        double delay;
 
-        friend std::ostream& operator<<(std::ostream& os, const reaction& r); //Give << access to our privates *wink wink*
+        friend std::ostream& operator<<(std::ostream& os, const Reaction& r); //Give << access to our privates *wink wink*
     };
 
     // Overload +, >> and >>=
@@ -41,23 +42,23 @@ namespace stochastic {
         return left;
     }
 
-    inline partialReaction operator>>(const std::vector<std::string>& inputs, double rate) {
+    inline PartialReaction operator>>(const std::vector<std::string>& inputs, double rate) {
         return {inputs, rate};
     }
 
-    inline partialReaction operator>>(const std::string& input, double rate) {
+    inline PartialReaction operator>>(const std::string& input, double rate) {
         return {std::vector<std::string>{input}, rate};
     }
 
-    inline reaction operator>>=(const partialReaction& partial, const std::vector<std::string>& products) {
+    inline Reaction operator>>=(const PartialReaction& partial, const std::vector<std::string>& products) {
         return {partial, products};
     }
 
-    inline reaction operator>>=(const partialReaction& partial, const std::string& product) {
+    inline Reaction operator>>=(const PartialReaction& partial, const std::string& product) {
         return {partial, std::vector<std::string>{product}};
     }
 
-    inline std::ostream& operator<<(std::ostream& os, const reaction& r) {
+    inline std::ostream& operator<<(std::ostream& os, const Reaction& r) {
         for (size_t i = 0; i < r.inputs.size(); ++i) {
             os << r.inputs[i];
             if (i != r.inputs.size() - 1) os << " + ";

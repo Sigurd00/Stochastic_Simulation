@@ -11,8 +11,8 @@ using namespace stochastic;
 
 TEST_CASE("Vessel")
 {
-    // Create a new vessel to hold reactants and reactions
-    auto vessel = stochastic::vessel{"Test"};
+    // Create a new Vessel to hold reactants and reactions
+    auto vessel = stochastic::Vessel{"Test"};
 
     // Add initial reactants
     const auto a =  vessel.add("a", 1);
@@ -40,7 +40,7 @@ TEST_CASE("Vessel")
         CHECK_THROWS(vessel.add("a", 0));
     }
 
-    SUBCASE("Adding reactions to vessel")
+    SUBCASE("Adding reactions to Vessel")
     {
         vessel.add(a >> 10.0 >>= b);
         auto r1 = vessel.reactions[0];
@@ -49,14 +49,14 @@ TEST_CASE("Vessel")
         CHECK((r1.products[0] == "b"));
     }
 
-    SUBCASE("Adding reaction with unknown reactant throws error")
+    SUBCASE("Adding Reaction with unknown reactant throws error")
     {
         const std::string d = "d";
         CHECK_THROWS(vessel.add(d >> 10 >>= a));
         CHECK_THROWS(vessel.add(a >> 10 >>= d));
     }
 
-    SUBCASE("Printing a single reaction in human readable format")
+    SUBCASE("Printing a single Reaction in human readable format")
     {
         vessel.add(a >> 10.0 >>= b);
         auto oss = std::ostringstream();
@@ -66,7 +66,7 @@ TEST_CASE("Vessel")
     }
 
 
-    SUBCASE("Printing reaction network in human readable format")
+    SUBCASE("Printing Reaction network in human readable format")
     {
         vessel.add(a >> 10.0 >>= b);
         vessel.add(a + b >> 0.5 >>= b + c);
@@ -81,7 +81,7 @@ TEST_CASE("Vessel")
         CHECK(oss.str() == "a -[10]-> b\na + b -[0.5]-> b + c\n");
     }
 
-    SUBCASE("Printing reaction network as DOT graph")
+    SUBCASE("Printing Reaction network as DOT graph")
     {
         vessel.add(a >> 10.0 >>= b);
         vessel.add(a + b >> 0.5 >>= b + c);

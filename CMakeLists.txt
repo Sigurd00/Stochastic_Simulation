@@ -3,6 +3,10 @@ project(Stochastic_Simulation)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(libcoro.cmake)
+
+add_subdirectory(matplotplusplus)
+
 # Add the directory where doctest.h is located
 include_directories(${CMAKE_SOURCE_DIR})
 
@@ -15,6 +19,8 @@ add_executable(Stochastic_Simulation
         reaction.h
         pretty_printer.cpp
         pretty_printer.h
+        demonstration.cpp
+        demonstration.h
 )
 
 # Add the test executable
@@ -27,6 +33,7 @@ add_executable(Stochastic_Simulation_Tests
         reaction_tests.cpp
 )
 
+target_link_libraries(Stochastic_Simulation PRIVATE libcoro)
 # Link the test executable with Doctest
 target_include_directories(Stochastic_Simulation_Tests PRIVATE ${CMAKE_SOURCE_DIR})
 
