@@ -5,8 +5,9 @@
 #include "demonstration.h"
 #include "vessel.h"
 #include <vector>
-#include <matplotlibcpp.h>
-namespace plt = matplotlibcpp;
+#include <fstream>
+#include <algorithm>
+#include <future>
 
 namespace stochastic{
     Vessel example_one() {
@@ -98,115 +99,139 @@ namespace stochastic{
         std::cout << "C = " << vessel.get("C") << "\n";
     }
 
+    double calculate_hospitalisation_peak(coro::generator<TrajectoryPoint> simulation) {
+        auto peak = double{0};
+
+        for (const auto& point : simulation) {
+            if (point.reactants.get("H") > peak){
+                peak = point.reactants.get("H");
+            }
+        }
+
+        return peak;
+    }
+
     void demonstrate_lazy_trajectory_support(){
         Vessel seihrDK = seihr(5822763);
         Vessel seihrNJ = seihr(589755);
-        auto simulationDK = seihrDK.simulate(100);
-        auto simulationNJ = seihrNJ.simulate(100);
+        const auto peakDK = calculate_hospitalisation_peak(seihrDK.simulate(100));
+        const auto peakNJ = calculate_hospitalisation_peak(seihrNJ.simulate(100));
 
-        double peakDK = 0;
-        double peakNJ = 0;
-
-        for (const auto& point : simulationDK) {
-            if (point.reactants.get("H") > peakDK){
-                peakDK = point.reactants.get("H");
-                std::cout << peakDK << std::endl;
-            }
-        }
-        std::cout << "ACTUAL PEAK DK = " << peakDK << std::endl;
-        for (const auto& point : simulationNJ) {
-            if (point.reactants.get("H") > peakNJ){
-                peakNJ = point.reactants.get("H");
-                std::cout << peakNJ << std::endl;
-            }
-        }
-
-        std::cout << "ACTUAL PEAK NJ = " << peakNJ << std::endl;
+        std::cout << "PEAK DK = " << peakDK << std::endl;
+        std::cout << "PEAK NJ = " << peakNJ << std::endl;
     }
 
     void visualize_example_one() {
         Vessel vessel = example_one();
         auto simulation = vessel.simulate(2000);
 
-        plt::figure_size(800, 600);
-        plt::xlabel("Time");
-        plt::ylabel("Count");
-        std::vector<double> time = {};
-        std::vector<double> A_values = {};
-        std::vector<double> B_values = {};
-        std::vector<double> C_values = {};
+        const std::vector<std::string> reactants = {"A", "B", "C"};
+        std::vector<std::vector<double>> data(reactants.size() + 1);
 
+        // Extract data from simulation
         for (const auto& point : simulation) {
-            time.push_back(point.time);
-            A_values.push_back(point.reactants.get("A"));
-            B_values.push_back(point.reactants.get("B"));
-            C_values.push_back(point.reactants.get("C"));
+            data[0].push_back(point.time);
+            for (size_t i = 0; i < reactants.size(); ++i) {
+                data[i + 1].push_back(point.reactants.get(reactants[i]));
+            }
         }
 
-        plt::plot(time, A_values, {{"label", "A"}});
-        plt::plot(time, B_values, {{"label", "B"}});
-        plt::plot(time, C_values, {{"label", "C"}});
-        plt::legend();
-        plt::save("example_one.png");
+        generate_graph(data, reactants, vessel.name);
+        open_gnuplot(vessel.name);
     }
 
     void visualize_seihr() {
         Vessel vessel = seihr(1000);
         auto simulation = vessel.simulate(100);
 
-        plt::figure_size(800, 600);
-        plt::xlabel("Time");
-        plt::ylabel("Count");
-        std::vector<double> time = {};
-        std::vector<double> S_values = {};
-        std::vector<double> E_values = {};
-        std::vector<double> I_values = {};
-        std::vector<double> H_values = {};
-        std::vector<double> R_values = {};
+        const std::vector<std::string> reactants = {"S", "E", "I", "H", "R"};
+        std::vector<std::vector<double>> data(reactants.size() + 1);
 
+        // Extract data from simulation
         for (const auto& point : simulation) {
-            time.push_back(point.time);
-            S_values.push_back(point.reactants.get("S"));
-            E_values.push_back(point.reactants.get("E"));
-            I_values.push_back(point.reactants.get("I"));
-            H_values.push_back(point.reactants.get("H") * 1000);
-            R_values.push_back(point.reactants.get("R"));
+            data[0].push_back(point.time);
+            for (size_t i = 0; i < reactants.size(); ++i) {
+                data[i + 1].push_back(point.reactants.get(reactants[i]));
+            }
         }
 
-        plt::plot(time, S_values, {{"label", "S"}});
-        plt::plot(time, E_values, {{"label", "E"}});
-        plt::plot(time, I_values, {{"label", "I"}});
-        plt::plot(time, H_values, {{"label", "H * 1000"}});
-        plt::plot(time, R_values, {{"label", "R"}});
-        plt::legend();
-        plt::save("seihr.png");
+        generate_graph(data, reactants, vessel.name);
+        open_gnuplot(vessel.name);
     }
 
-    void visualize_circadian_rhytm() {
+    void visualize_circadian_rhythm() {
         Vessel vessel = circadian_rhythm();
         auto simulation = vessel.simulate(100);
 
-        plt::figure_size(800, 600);
-        plt::xlabel("Time");
-        plt::ylabel("Count");
-        std::vector<double> time = {};
-        std::vector<double> C_values = {};
-        std::vector<double> A_values = {};
-        std::vector<double> R_values = {};
+        const std::vector<std::string> reactants = {"C", "A", "R"};
+        std::vector<std::vector<double>> data(reactants.size() + 1);
 
-
+        // Extract data from simulation
         for (const auto& point : simulation) {
-            time.push_back(point.time);
-            C_values.push_back(point.reactants.get("C"));
-            A_values.push_back(point.reactants.get("A"));
-            R_values.push_back(point.reactants.get("R"));
-
+            data[0].push_back(point.time);
+            for (size_t i = 0; i < reactants.size(); ++i) {
+                data[i + 1].push_back(point.reactants.get(reactants[i]));
+            }
         }
 
-        plt::plot(time, C_values, {{"label", "S"}});
-        plt::plot(time, A_values, {{"label", "E"}});
-        plt::plot(time, R_values, {{"label", "I"}});
-        plt::legend();
-        plt::save("circadian_rhytm.png");
+        generate_graph(data, reactants, vessel.name);
+        open_gnuplot(vessel.name);
     }
+
+    void generate_graph(const std::vector<std::vector<double>>& data, const std::vector<std::string>& reactants, std::string title) {
+        std::replace(title.begin(), title.end(), ' ', '_');
+        // Save data in file
+        std::ofstream datafile(title + "_data.txt");
+        if (!datafile.is_open()) {
+            std::cerr << "Error opening data file." << std::endl;
+        }
+
+        // Write header
+        datafile << "# Time";
+        for (const auto& reactant : reactants) {
+            datafile << " " << reactant;
+        }
+        datafile << "\n";
+
+        // Write data
+        for (size_t i = 0; i < data[0].size(); ++i) {
+            for (const auto& vec : data) {
+                datafile << vec[i] << " ";
+            }
+            datafile << "\n";
+        }
+        datafile.close();
+
+        //Write script file
+        std::ofstream scriptfile(title + ".gp");
+        if (!scriptfile.is_open()) {
+            std::cerr << "Error creating gnuplot script file." << std::endl;
+            return;
+        }
+        scriptfile << "set title \""+ title +"\"\n";
+        scriptfile << "set xlabel \"Time\"\n";
+        scriptfile << "set ylabel \"Count\"\n";
+        scriptfile << "set xrange [0:" + std::to_string(std::floor(data[0].back())) +"]\n"; //from 0 to last time
+        scriptfile << "plot ";
+        for (size_t i = 0; i < reactants.size(); ++i) {
+            scriptfile << "\"" + title +"_data.txt\" using 1:" << (i + 2) << " with lines title \"" << reactants[i] << "\"";
+            if (i < reactants.size() - 1) {
+                scriptfile << ", ";
+            }
+        }
+        scriptfile << "\n";
+        scriptfile << "pause -1\n";
+        scriptfile << "exit\n";
+        scriptfile.close();
+    }
+
+    void open_gnuplot(std::string title) {
+        std::replace(title.begin(), title.end(), ' ', '_');
+        std::string command = "gnuplot -persist " + title +".gp";
+        if (system(command.c_str()) != 0) {
+            std::cerr << "Error executing gnuplot command." << std::endl;
+        }
+    }
+
+
 }

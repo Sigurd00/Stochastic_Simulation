@@ -68,14 +68,15 @@ namespace stochastic {
     {
     public:
         std::vector<Reaction> reactions;
-        explicit Vessel(std::string  name) : _name(std::move(name)) {}
+        std::string const name;
+        explicit Vessel(std::string  name) : name(std::move(name)) {}
 
         const std::string& add(const std::string& key, double value) {
             return reactants.add(key, value);
         }
 
-        const std::string& environment() {
-            return add("env", 0);
+        std::string environment() {
+            return reactants.add("env", 0);
         }
 
         void add(const Reaction& reaction) {
@@ -102,7 +103,7 @@ namespace stochastic {
             return reactants.get_all_symbols();
         }
 
-        coro::generator<TrajectoryPoint> simulate(const double& end_time) {
+        virtual coro::generator<TrajectoryPoint> simulate(const double& end_time) {
             double current_time = 0;
 
             while (current_time <= end_time){
@@ -112,7 +113,7 @@ namespace stochastic {
                 auto& reaction = *std::min_element(reactions.begin(), reactions.end(), [](const auto a, const auto b ) {return a.delay < b.delay;});
                 current_time += reaction.delay;
 
-                if (std::none_of(reaction.inputs.begin(), reaction.inputs.end(), [&] (const auto& reactant) {return reactants.get(reactant) == 0;})){
+                if (std::none_of(reaction.inputs.begin(), reaction.inputs.end(), [&reactants = reactants] (const auto& reactant) {return reactants.get(reactant) == 0;})){
                     for (const auto& reactant : reaction.inputs) {
                         reactants.update(reactant, reactants.get(reactant) - 1);
                     }
@@ -124,10 +125,7 @@ namespace stochastic {
             }
         }
 
-    private:
-        std::string const _name;
-        Symbol_table<std::string, double> reactants;
-
+    protected:
         void compute_delay(Reaction& reaction) const {
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -145,6 +143,17 @@ namespace stochastic {
             std::exponential_distribution d(reaction.rate * input_product);
 
             reaction.delay = d(gen);
+        }
+        Symbol_table<std::string, double> reactants;
+    };
+
+    class VesselOptimized : public Vessel
+    {
+    public:
+        coro::generator<TrajectoryPoint> simulate(const double &end_time) override {
+            double current_time = 0;
+
+            co_yield {current_time, reactants};
         }
     };
 }
