@@ -15,6 +15,7 @@ namespace stochastic {
     Vessel circadian_rhythm();
 
     Vessel seihr(uint32_t N);
+    VesselOptimized seihr_optimized(uint32_t N);
 
     void simulate_example_one();
 

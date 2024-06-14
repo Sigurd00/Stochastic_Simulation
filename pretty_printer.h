@@ -14,11 +14,6 @@
 #include <cstdlib>
 
 namespace stochastic{
-    struct Edge {
-            std::string from;
-            std::string to;
-            std::string label;
-    };
 
     class pretty_printer {
     public:

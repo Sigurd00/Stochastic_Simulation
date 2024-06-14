@@ -12,6 +12,8 @@
 #include <random>
 #include <algorithm>
 #include <coro/coro.hpp>
+#include <set>
+#include <ranges>
 #ifndef STOCHASTIC_SIMULATION_VESSEL_H
 #define STOCHASTIC_SIMULATION_VESSEL_H
 
@@ -60,7 +62,7 @@ namespace stochastic {
     };
 
     struct TrajectoryPoint {
-        double time;
+        double time{};
         Symbol_table<std::string, double> reactants;
     };
 
@@ -150,10 +152,47 @@ namespace stochastic {
     class VesselOptimized : public Vessel
     {
     public:
+        using Vessel::Vessel; // Inherit constructor
         coro::generator<TrajectoryPoint> simulate(const double &end_time) override {
             double current_time = 0;
+            // std::set<std::string> affected_reactants = {};
 
-            co_yield {current_time, reactants};
+            for (auto& reaction : reactions){
+                compute_delay(reaction);
+            }
+
+            while (current_time <= end_time) {
+                auto& reaction = *std::min_element(reactions.begin(), reactions.end(), [](const auto a, const auto b ) {return a.delay < b.delay;});
+                current_time += reaction.delay;
+
+                if (std::none_of(reaction.inputs.begin(), reaction.inputs.end(), [&reactants = reactants] (const auto& reactant) {return reactants.get(reactant) == 0;})){
+                    for (const auto& reactant : reaction.inputs) {
+                        reactants.update(reactant, reactants.get(reactant) - 1);
+                        // affected_reactants.insert(reactant);
+                    }
+                    for (const auto& reactant : reaction.products) {
+                        reactants.update(reactant, reactants.get(reactant) + 1);
+                        // affected_reactants.insert(reactant);
+                    }
+                    // Only recompute delays for affected reactions
+                    /*for (auto& r : reactions) {
+                        if (std::any_of(r.inputs.begin(), r.inputs.end(), [&affected_reactants](const auto& reactant) {
+                            return affected_reactants.count(reactant) > 0;
+                        }) || std::any_of(r.products.begin(), r.products.end(), [&affected_reactants](const auto& reactant) {
+                            return affected_reactants.count(reactant) > 0;
+                        })) {
+                            compute_delay(r);
+                        }
+                    }
+                    affected_reactants.clear(); */
+
+                    for (auto& reaction : reactions){
+                        compute_delay(reaction);
+                    }
+                }
+
+                co_yield {current_time, reactants};
+            }
         }
     };
 }

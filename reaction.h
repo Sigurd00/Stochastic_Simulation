@@ -9,6 +9,8 @@
 #include "string"
 #include "vector"
 #include <iostream>
+#include <ranges>
+#include <algorithm>
 
 namespace stochastic {
 
@@ -22,7 +24,7 @@ namespace stochastic {
 
     class Reaction{
     public:
-        Reaction(PartialReaction partial, std::vector<std::string> products) : inputs(std::move(partial.inputs)), products(std::move(products)), rate(partial.rate) {}
+        Reaction(PartialReaction _partial, std::vector<std::string> _products) : inputs(std::move(_partial.inputs)), products(std::move(_products)), rate(_partial.rate) {}
 
         const std::vector<std::string> inputs;
         const std::vector<std::string> products;
