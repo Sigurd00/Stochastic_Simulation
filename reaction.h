@@ -13,7 +13,7 @@
 #include <algorithm>
 
 namespace stochastic {
-
+    // Requirement 1
     class PartialReaction{
     public:
         PartialReaction(std::vector<std::string> inputs, double rate) : inputs(std::move(inputs)), rate(rate) {}

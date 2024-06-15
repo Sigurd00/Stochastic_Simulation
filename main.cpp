@@ -51,16 +51,16 @@ int main() {
      */
 
     // Demonstration of requirement 5-6
-    //visualize_example_one();
+    visualize_example_one();
     visualize_seihr();
-    //visualize_circadian_rhythm();
+    visualize_circadian_rhythm();
 
-    // Demonstration of 7
-    //demonstrate_lazy_trajectory_support();
+    // Demonstration of requirement 7
+    demonstrate_lazy_trajectory_support();
     // Peak for NJ = 127 and Peak for DK = 1195
 
     // Demonstration of 8
-    auto vessels = std::vector<Vessel>{100, seihr(500'000)};
+    auto vessels = std::vector<Vessel>{100, seihr(500000)};
     auto futures = parallelize_execution_of_multiple_sims<double>(vessels, 100, calculate_hospitalisation_peak);
     double sum = 0;
     for (auto& future : futures) {

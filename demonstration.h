@@ -15,7 +15,6 @@ namespace stochastic {
     Vessel circadian_rhythm();
 
     Vessel seihr(uint32_t N);
-    VesselOptimized seihr_optimized(uint32_t N);
 
     void simulate_example_one();
 
@@ -33,6 +32,7 @@ namespace stochastic {
 
     double calculate_hospitalisation_peak(coro::generator<TrajectoryPoint> simulation);
 
+    //Requirement 8
     template<typename T>
     std::vector<std::future<T>> parallelize_execution_of_multiple_sims(std::vector<Vessel>& vessels, const double& end_time, std::function<T (coro::generator<TrajectoryPoint>)> worker_function) {
         std::vector<std::future<T>> futures;
